@@ -1,0 +1,31 @@
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String
+  passwordHash String
+  createdAt    DateTime
+  role         String   @default("user")
+  posts        Post[]
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  imageUrl  String?
+  published Boolean
+  authorId  Int
+  createdAt DateTime
+  updatedAt DateTime
+  user      User     @relation(fields: [authorId], references: [id])
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}

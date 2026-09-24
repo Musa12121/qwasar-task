@@ -1,0 +1,27 @@
+.default-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.default-links {
+  display: flex;
+  gap: 50px;
+}
+
+.default-links a {
+  font-size: 35px;
+  font-weight: bold;
+  text-decoration: none;
+  border: 1px solid;
+  padding: 15px;
+  border-radius: 10px;
+  color: black;
+  transition: 0.2s;
+
+  &:hover {
+    background-color: black;
+    color: white;
+  }
+}
