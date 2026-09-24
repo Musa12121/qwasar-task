@@ -108,7 +108,7 @@ Create a `.env` file in the server directory and add your database URL and JWT s
 
 Example:
 
-```env
+env
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="your-secret-key"
 
