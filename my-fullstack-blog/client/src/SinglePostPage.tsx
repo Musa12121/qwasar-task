@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Spinner from "./Spinner";
 
 export default function SinglePostPage() {
   const [data, setData] = useState();
@@ -10,7 +11,6 @@ export default function SinglePostPage() {
   const parsedId = parseInt(id);
 
   useEffect(() => {
-    setLoading(true);
     setError('')
     const main = async () => {
       try {
@@ -41,7 +41,7 @@ export default function SinglePostPage() {
         alignItems: "center",
       }}
     >
-      {loading && <p>Loading post...</p>}
+      {loading && <Spinner />}
 
       {!loading && error && <p>{error}</p>}
 

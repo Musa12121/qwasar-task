@@ -2,12 +2,14 @@ import { useContext, useState } from "react";
 import "./Register.css";
 import { Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigator = useNavigate();
 
   const { register } = useContext(AuthContext);
 
@@ -17,6 +19,7 @@ export default function Register() {
       setError("Email is already registered");
       return;
     }
+    navigator("/posts");
   }
 
   return (

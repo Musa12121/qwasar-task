@@ -3,11 +3,12 @@ import { AuthContext } from "./AuthContext";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { useNavigate } from "react-router-dom";
 import './AdminPage.css'
+import Spinner from "./Spinner";
 
 export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { logout } = useContext(AuthContext);
   const navigator = useNavigate();
@@ -27,7 +28,6 @@ export default function AdminPage() {
   }
 
   async function togglePublished(id: number) {
-    setLoading(true);
     setError("");
     const response = await fetch(
       `http://localhost:5500/api/admin/posts/${id}/published`,
@@ -106,7 +106,7 @@ export default function AdminPage() {
       <section className="admin-section">
         <h2>Posts</h2>
 
-        {loading && <p>Loading...</p>}
+        {loading && <Spinner/>}
         {error && <p className="admin-error">{error}</p>}
 
         {!loading && !error && posts.length === 0 && <p>No posts found.</p>}

@@ -5,6 +5,9 @@ import { PrismaClient } from "../generated/prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.post.deleteMany();
+  await prisma.user.deleteMany();
+  
   const adminPassword = await bcrypt.hash("admin123", 10);
   const user1Password = await bcrypt.hash("user123", 10);
   const user2Password = await bcrypt.hash("user456", 10);

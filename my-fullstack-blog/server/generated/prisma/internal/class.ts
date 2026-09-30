@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "C:\\Users\\user\\Desktop\\my-fullstack-blog\\server\\generated\\prisma",
+      "value": "C:\\Users\\user\\Desktop\\New folder\\my-fullstack-blog\\my-fullstack-blog\\server\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -37,7 +37,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\user\\Desktop\\my-fullstack-blog\\server\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\user\\Desktop\\New folder\\my-fullstack-blog\\my-fullstack-blog\\server\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../prisma",
