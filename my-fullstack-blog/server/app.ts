@@ -90,7 +90,7 @@ app.post("/api/auth/register", async (request, response) => {
       },
     });
 
-    if (userExists) {
+    if (userExists && Object.keys(userExists).length > 0) {
       return response.status(409).json({
         message: "Email is already registered",
       });

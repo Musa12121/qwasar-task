@@ -15,8 +15,9 @@ export default function Register() {
 
   async function submitHandler(e) {
     e.preventDefault();
-    if (!(await register(email, username, password))) {
-      setError("Email is already registered");
+    const result= await register(email, username, password);
+    if (!(result.success)) {
+      setError(result.message);
       return;
     }
     navigator("/posts");

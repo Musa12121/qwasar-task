@@ -58,14 +58,19 @@ export default function AuthProvider({ children }) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.log(data.message);
-      return false;
+      return {
+        success: false,
+        message: data.message,
+      };
     }
 
     localStorage.setItem("token", data.token);
     setToken(data.token);
     setUser(data.user);
-    return true;
+    return {
+      success: true,
+      message: "",
+    };
   }
 
   async function login(email: string, password: string) {
