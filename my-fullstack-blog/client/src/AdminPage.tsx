@@ -15,9 +15,7 @@ export default function AdminPage() {
 
   async function getPosts() {
     const postsResponse = await fetch("http://localhost:5500/api/admin/posts", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      credentials: "include",
     });
 
     const postsData = await postsResponse.json();
@@ -33,10 +31,8 @@ export default function AdminPage() {
       `http://localhost:5500/api/admin/posts/${id}/published`,
       {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      },
+        credentials: "include",
+      }
     );
 
     if (response.status === 401) {
@@ -59,9 +55,7 @@ export default function AdminPage() {
     setLoading(true);
     async function getUsers() {
       const response = await fetch("http://localhost:5500/api/admin/users", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        credentials: "include",
       });
 
       const data = await response.json();

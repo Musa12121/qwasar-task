@@ -15,7 +15,7 @@ export default function HomePage() {
   const navigator = useNavigate();
   useEffect(() => {
     setError("");
-    fetch("http://localhost:5500/api/posts")
+    fetch("http://localhost:5500/api/posts", { credentials: "include" })
       .then((response) => {
         if (response.ok) {
           return response.json();

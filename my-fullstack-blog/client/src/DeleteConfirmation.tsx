@@ -18,9 +18,7 @@ export default function DeleteConfirmation({ id, setPostList }) {
 
     const response = await fetch(`http://localhost:5500/api/posts/${id}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      credentials: "include",
     });
 
     if (response.status === 401) {

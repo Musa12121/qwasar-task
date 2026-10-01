@@ -6,11 +6,18 @@ import cors from "cors";
 import { PrismaClient } from "./generated/prisma/client";
 import multer from "multer";
 import path from "path";
+import cookieParser from "cookie-parser";
 
 const app = express();
 app.use("/uploads", express.static("uploads"));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 
 const prisma = new PrismaClient();
 
@@ -50,12 +57,12 @@ const authMiddleware = (
   response: Response,
   next: NextFunction,
 ) => {
-  if (!request.headers.authorization) {
+  const token = request.cookies.token;
+  if (!token) {
     return response.status(401).json({
       message: "Authorization token is required",
     });
   }
-  const token = request.headers.authorization.split(" ")[1];
   try {
     const isTokenCorrect = jwt.verify(token, process.env.JWT_SECRET!);
     response.locals.userId = isTokenCorrect.userId;
@@ -111,6 +118,14 @@ app.post("/api/auth/register", async (request, response) => {
         expiresIn: "3h",
       },
     );
+
+    response.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 3 * 60 * 60 * 1000,
+    });
+
     return response.status(201).json({
       token,
       user: {
@@ -147,6 +162,14 @@ app.post("/api/auth/login", async (request, response) => {
         process.env.JWT_SECRET!,
         { expiresIn: "3h" },
       );
+
+      response.cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 3 * 60 * 60 * 1000,
+      });
+
       return response.status(200).json({
         token,
         user: {

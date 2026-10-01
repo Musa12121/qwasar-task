@@ -27,10 +27,8 @@ export default function CreatePostPage() {
 
     const response = await fetch("http://localhost:5500/api/posts", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
       body: formData,
+      credentials: "include",
     });
 
     const data = await response.json();

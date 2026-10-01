@@ -17,7 +17,7 @@ export default function EditPostPage() {
   useEffect(() => {
     setError("");
     async function getPost() {
-      const response = await fetch(`http://localhost:5500/api/posts/${id}`);
+      const response = await fetch(`http://localhost:5500/api/posts/${id}`,{ credentials: "include" });
 
       const data = await response.json();
 
@@ -46,10 +46,8 @@ export default function EditPostPage() {
 
     const response = await fetch(`http://localhost:5500/api/posts/${id}`, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
       body: formData,
+      credentials: "include",
     });
 
     const data = await response.json();

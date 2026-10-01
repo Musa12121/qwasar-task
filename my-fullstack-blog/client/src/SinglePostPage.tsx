@@ -16,6 +16,7 @@ export default function SinglePostPage() {
       try {
         const response = await fetch(
           `http://localhost:5500/api/posts/${parsedId}`,
+          { credentials: "include" }
         );
         const data = await response.json();
         if (!response.ok) {
