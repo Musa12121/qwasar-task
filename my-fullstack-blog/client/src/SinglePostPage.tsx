@@ -49,6 +49,7 @@ export default function SinglePostPage() {
 
       {data && (
         <article className="post-card" style={{ maxWidth: "350px" }}>
+          <div className="card-content">
           {data.imageUrl && (
             <img
               className="post-image"
@@ -57,7 +58,6 @@ export default function SinglePostPage() {
             />
           )}
 
-          <div className="post-card-content">
             <h2 className="post-title">{data.title}</h2>
 
             <p className="post-excerpt">{data.content}</p>

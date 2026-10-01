@@ -57,7 +57,7 @@ export default function HomePage() {
             )}
           </div>
         </div>
-        {loading && <Spinner/>}
+        {loading && <Spinner />}
 
         {!loading && error && <p>{error}</p>}
 
@@ -68,21 +68,16 @@ export default function HomePage() {
           <div className="posts-grid">
             {postList.map((post) => (
               <article className="post-card" key={post.id}>
-                {post.imageUrl && (
-                  <img
-                    className="post-image"
-                    src={`http://localhost:5500${post.imageUrl}`}
-                    alt={post.title}
-                  />
-                )}
+                <div className="card-content" onClick={() => navigator(`/posts/${post.id}`)}>
+                  {post.imageUrl && (
+                    <img
+                      className="post-image"
+                      src={`http://localhost:5500${post.imageUrl}`}
+                      alt={post.title}
+                    />
+                  )}
 
-                <div className="post-card-content">
-                  <h2
-                    className="post-title"
-                    onClick={() => navigator(`/posts/${post.id}`)}
-                  >
-                    {post.title}
-                  </h2>
+                  <h2 className="post-title">{post.title}</h2>
 
                   <p className="post-excerpt">{post.content}</p>
 
@@ -91,23 +86,22 @@ export default function HomePage() {
 
                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <div className="post-actions">
-                    {user && user.id === post.authorId && (
-                      <>
-                        <Link
-                          to={`/posts/${post.id}/edit`}
-                          className="edit-button"
-                        >
-                          Edit
-                        </Link>
-                        <DeleteConfirmation
-                          setPostList={setPostList}
-                          id={post.id}
-                        />
-                      </>
-                    )}
-                  </div>
                 </div>
+                
+                  {user && user.id === post.authorId && (
+                    <div className="post-actions">
+                      <Link
+                        to={`/posts/${post.id}/edit`}
+                        className="edit-button"
+                      >
+                        Edit
+                      </Link>
+                      <DeleteConfirmation
+                        setPostList={setPostList}
+                        id={post.id}
+                      />
+                    </div>
+                  )}
               </article>
             ))}
           </div>
