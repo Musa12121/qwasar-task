@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import "./HomePage.css";
+import "../../styles/HomePage.css";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContext";
-import Navbar from "./Navbar";
-import Spinner from "./Spinner";
+import { AuthContext } from "../../context/AuthContext";
+import Navbar from "../Navbar";
+import Spinner from "../Spinner";
 
 export default function HomePage() {
   const [postList, setPostList] = useState([]);

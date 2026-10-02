@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function DeleteConfirmation({ id, setPostList }) {
   const { logout } = useContext(AuthContext);

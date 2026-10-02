@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "./AuthContext";
-import DeleteConfirmation from "./DeleteConfirmation";
+import { AuthContext } from "../../context/AuthContext";
+import DeleteConfirmation from "../post/DeleteConfirmation";
 import { useNavigate } from "react-router-dom";
-import './AdminPage.css'
-import Spinner from "./Spinner";
+import '../../styles/AdminPage.css'
+import Spinner from "../Spinner";
 
 export default function AdminPage() {
   const [users, setUsers] = useState([]);

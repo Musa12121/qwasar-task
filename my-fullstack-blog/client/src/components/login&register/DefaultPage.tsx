@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./Default.css";
+import "../../styles/Default.css";
 
 export default function DefaultPage() {
   return (

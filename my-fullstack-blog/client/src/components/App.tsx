@@ -1,14 +1,14 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm ";
-import "./App.css";
-import HomePage from "./HomePage";
-import CreatePostPage from "./CreatePostPage";
-import SinglePostPage from "./SinglePostPage";
-import EditPostPage from "./EditPostPage";
+import { Route, Routes } from "react-router-dom";
+import LoginForm from "./login&register/LoginForm";
+import RegisterForm from "./login&register/RegisterForm ";
+import "../styles/App.css";
+import HomePage from "./post/HomePage";
+import CreatePostPage from "./post/CreatePostPage";
+import SinglePostPage from "./post/SinglePostPage";
+import EditPostPage from "./post/EditPostPage";
 import ProtectedRoute from "./ProtectedRoute";
-import AdminPage from "./AdminPage";
-import DefaultPage from "./DefaultPage";
+import AdminPage from "./admin/AdminPage";
+import DefaultPage from "./login&register/DefaultPage";
 
 export default function App() {
   return (

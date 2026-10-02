@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./CreatePost.css";
-import { AuthContext } from "./AuthContext";
+import "../../styles/CreatePost.css";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");

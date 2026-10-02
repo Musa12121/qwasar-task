@@ -1,8 +1,8 @@
 import { createRoot } from "react-dom/client";
-import "./index.css";
+import "../styles/index.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
-import AuthProvider from "./AuthContext.tsx";
+import AuthProvider from "../context/AuthContext.tsx";
 import { useEffect } from "react";
 
 function AppBootstrap() {

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import { NavLink } from "react-router-dom";
 
 export default function Navbar({ user }) {

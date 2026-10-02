@@ -5,11 +5,10 @@ export const AuthContext = createContext(null);
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigator = useNavigate();
 
   useEffect(() => {
-      setLoading(true);
       fetch("http://localhost:5500/api/auth/me", {
         credentials: "include",
       })

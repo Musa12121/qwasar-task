@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "./EditPostPage.css";
-import { AuthContext } from "./AuthContext";
+import "../../styles/EditPostPage.css";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function EditPostPage() {
   const { id } = useParams();

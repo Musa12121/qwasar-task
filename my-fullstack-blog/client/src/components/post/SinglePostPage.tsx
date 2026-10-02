@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Spinner from "./Spinner";
+import Spinner from "../Spinner";
 
 export default function SinglePostPage() {
   const [data, setData] = useState();
