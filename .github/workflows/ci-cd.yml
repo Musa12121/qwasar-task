@@ -23,11 +23,11 @@ jobs:
           cache: npm
           cache-dependency-path: my-fullstack-blog/client/package-lock.json
 
-      - run: npm ci
+      - run: npm ci --prefix client
 
-      - run: npm run lint
+      - run: npm run lint --prefix client
 
-      - run: npm run build
+      - run: npm run build --prefix client
 
       - run: docker build -f dockerfile -t my-fullstack-blog .
 
