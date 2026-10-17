@@ -1,18 +1,20 @@
-import { useContext, useState } from "react";
+import { API_BASE_URL } from "../../api";
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/CreatePost.css";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState();
+  const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState("");
   const navigator = useNavigate();
-  const { logout } = useContext(AuthContext);
+  const { logout } = useAuth();
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -25,7 +27,7 @@ export default function CreatePostPage() {
       formData.append("image", image);
     }
 
-    const response = await fetch("http://localhost:5500/api/posts", {
+    const response = await fetch(`${API_BASE_URL}/api/posts`, {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -46,10 +48,11 @@ export default function CreatePostPage() {
     navigator("/posts");
   }
 
-  function imageHandler(e) {
-    if (e.target.files.length) {
-      setImage(e.target.files[0]);
-      setPreview(URL.createObjectURL(e.target.files[0]));
+  function imageHandler(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
     }
     return;
   }

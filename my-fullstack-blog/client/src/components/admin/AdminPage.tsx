@@ -1,20 +1,22 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../api";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import type { Post, User } from "../../types";
 import DeleteConfirmation from "../post/DeleteConfirmation";
 import { useNavigate } from "react-router-dom";
 import '../../styles/AdminPage.css'
 import Spinner from "../Spinner";
 
 export default function AdminPage() {
-  const [users, setUsers] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { logout } = useContext(AuthContext);
+  const { logout } = useAuth();
   const navigator = useNavigate();
 
   async function getPosts() {
-    const postsResponse = await fetch("http://localhost:5500/api/admin/posts", {
+    const postsResponse = await fetch(`${API_BASE_URL}/api/admin/posts`, {
       credentials: "include",
     });
 
@@ -28,7 +30,7 @@ export default function AdminPage() {
   async function togglePublished(id: number) {
     setError("");
     const response = await fetch(
-      `http://localhost:5500/api/admin/posts/${id}/published`,
+      `${API_BASE_URL}/api/admin/posts/${id}/published`,
       {
         method: "PATCH",
         credentials: "include",
@@ -54,7 +56,7 @@ export default function AdminPage() {
   useEffect(() => {
     setLoading(true);
     async function getUsers() {
-      const response = await fetch("http://localhost:5500/api/admin/users", {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
         credentials: "include",
       });
 

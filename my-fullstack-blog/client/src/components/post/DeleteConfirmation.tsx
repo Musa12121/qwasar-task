@@ -1,9 +1,17 @@
-import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../api";
+import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useAuth } from "../../context/AuthContext";
+import type { Post } from "../../types";
 
-export default function DeleteConfirmation({ id, setPostList }) {
-  const { logout } = useContext(AuthContext);
+export default function DeleteConfirmation({
+  id,
+  setPostList,
+}: {
+  id: number;
+  setPostList: Dispatch<SetStateAction<Post[]>>;
+}) {
+  const { logout } = useAuth();
   const [error, setError] = useState("");
 
   async function handleDelete() {
@@ -16,7 +24,7 @@ export default function DeleteConfirmation({ id, setPostList }) {
       return;
     }
 
-    const response = await fetch(`http://localhost:5500/api/posts/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
       method: "DELETE",
       credentials: "include",
     });

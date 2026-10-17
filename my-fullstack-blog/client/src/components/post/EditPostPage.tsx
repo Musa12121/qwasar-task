@@ -1,7 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+import { API_BASE_URL } from "../../api";
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/EditPostPage.css";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function EditPostPage() {
   const { id } = useParams();
@@ -10,14 +12,14 @@ export default function EditPostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
-  const {logout}=useContext(AuthContext)
+  const { logout } = useAuth();
 
   useEffect(() => {
     setError("");
     async function getPost() {
-      const response = await fetch(`http://localhost:5500/api/posts/${id}`,{ credentials: "include" });
+      const response = await fetch(`${API_BASE_URL}/api/posts/${id}`,{ credentials: "include" });
 
       const data = await response.json();
 
@@ -33,7 +35,7 @@ export default function EditPostPage() {
     getPost();
   }, [id]);
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData();
 
@@ -44,7 +46,7 @@ export default function EditPostPage() {
       formData.append("image", image);
     }
 
-    const response = await fetch(`http://localhost:5500/api/posts/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/posts/${id}`, {
       method: "PUT",
       body: formData,
       credentials: "include",
@@ -65,10 +67,11 @@ export default function EditPostPage() {
     navigate("/posts");
   }
 
-  function imageHandler(e) {
-    if (e.target.files.length) {
-      setImage(e.target.files[0]);
-      setPreview(URL.createObjectURL(e.target.files[0]));
+  function imageHandler(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
     }
     return;
   }

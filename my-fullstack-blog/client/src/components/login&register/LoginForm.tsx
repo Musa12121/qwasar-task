@@ -1,17 +1,18 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import "../../styles/Login.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const navigator = useNavigate();
   const location = useLocation();
 
-  async function submitHandler(e) {
+  async function submitHandler(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (await login(email, password)) {

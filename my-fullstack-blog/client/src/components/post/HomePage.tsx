@@ -1,21 +1,23 @@
-import { useContext, useEffect, useState } from "react";
+import { API_BASE_URL } from "../../api";
+import { useEffect, useState } from "react";
 import "../../styles/HomePage.css";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import type { Post } from "../../types";
 import Navbar from "../Navbar";
 import Spinner from "../Spinner";
 
 export default function HomePage() {
-  const [postList, setPostList] = useState([]);
+  const [postList, setPostList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const navigator = useNavigate();
   useEffect(() => {
     setError("");
-    fetch("http://localhost:5500/api/posts", { credentials: "include" })
+    fetch(`${API_BASE_URL}/api/posts`, { credentials: "include" })
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -72,7 +74,7 @@ export default function HomePage() {
                   {post.imageUrl && (
                     <img
                       className="post-image"
-                      src={`http://localhost:5500${post.imageUrl}`}
+                      src={`${API_BASE_URL}${post.imageUrl}`}
                       alt={post.title}
                     />
                   )}
@@ -82,7 +84,7 @@ export default function HomePage() {
                   <p className="post-excerpt">{post.content}</p>
 
                   <div className="post-meta">
-                    <span>By {post.user.username}</span>
+                    <span>By {post.user?.username}</span>
 
                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                   </div>

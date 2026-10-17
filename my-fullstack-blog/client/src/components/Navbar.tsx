@@ -1,9 +1,9 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import type { User } from "../types";
 import { NavLink } from "react-router-dom";
 
-export default function Navbar({ user }) {
-  const { logout } = useContext(AuthContext);
+export default function Navbar({ user }: { user: User | null }) {
+  const { logout } = useAuth();
 
   return (
     <nav

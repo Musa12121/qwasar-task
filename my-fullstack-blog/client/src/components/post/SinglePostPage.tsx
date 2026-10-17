@@ -1,21 +1,23 @@
+import { API_BASE_URL } from "../../api";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Spinner from "../Spinner";
+import type { Post } from "../../types";
 
 export default function SinglePostPage() {
-  const [data, setData] = useState();
+  const [data, setData] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const { id } = useParams();
-  const parsedId = parseInt(id);
+  const parsedId = parseInt(id ?? "0");
 
   useEffect(() => {
     setError('')
     const main = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5500/api/posts/${parsedId}`,
+          `${API_BASE_URL}/api/posts/${parsedId}`,
           { credentials: "include" }
         );
         const data = await response.json();
@@ -54,7 +56,7 @@ export default function SinglePostPage() {
           {data.imageUrl && (
             <img
               className="post-image"
-              src={`http://localhost:5500${data.imageUrl}`}
+              src={`${API_BASE_URL}${data.imageUrl}`}
               alt={data.title}
             />
           )}
@@ -64,7 +66,7 @@ export default function SinglePostPage() {
             <p className="post-excerpt">{data.content}</p>
 
             <div className="post-meta">
-              <span>By {data.author.username}</span>
+              <span>By {data.author?.username}</span>
 
               <span>{new Date(data.createdAt).toLocaleDateString()}</span>
             </div>

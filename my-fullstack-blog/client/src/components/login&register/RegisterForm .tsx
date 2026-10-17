@@ -1,7 +1,8 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import "../../styles/Register.css";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -11,9 +12,9 @@ export default function Register() {
   const [error, setError] = useState("");
   const navigator = useNavigate();
 
-  const { register } = useContext(AuthContext);
+  const { register } = useAuth();
 
-  async function submitHandler(e) {
+  async function submitHandler(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const result= await register(email, username, password);
     if (!(result.success)) {

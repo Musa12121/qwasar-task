@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { config } from "./config";
 import express, { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,13 +8,17 @@ import { PrismaClient } from "./generated/prisma/client";
 import multer from "multer";
 import path from "path";
 import cookieParser from "cookie-parser";
+import pinoHttp from "pino-http";
+import pino from "pino";
 
 const app = express();
+
+app.use(pinoHttp({ transport: config.nodeEnv === "development" ? { target: "pino-pretty" } : undefined }));
 app.use("/uploads", express.static("uploads"));
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: config.clientUrl,
     credentials: true,
   }),
 );
@@ -64,7 +69,7 @@ const authMiddleware = (
     });
   }
   try {
-    const isTokenCorrect = jwt.verify(token, process.env.JWT_SECRET!);
+    const isTokenCorrect = jwt.verify(token, config.jwtSecret);
     response.locals.userId = isTokenCorrect.userId;
     response.locals.role = isTokenCorrect.role;
     next();
@@ -113,7 +118,7 @@ app.post("/api/auth/register", async (request, response) => {
     });
     const token = jwt.sign(
       { userId: newUser.id, role: newUser.role },
-      process.env.JWT_SECRET!,
+      config.jwtSecret,
       {
         expiresIn: "3h",
       },
@@ -159,7 +164,7 @@ app.post("/api/auth/login", async (request, response) => {
     if (isEqual) {
       const token = jwt.sign(
         { userId: userExists.id, role: userExists.role },
-        process.env.JWT_SECRET!,
+        config.jwtSecret,
         { expiresIn: "3h" },
       );
 
@@ -429,4 +434,41 @@ app.get(
   },
 );
 
-app.listen(5500, () => console.log("server started"));
+app.get("/api/health", (request, response) => {
+  response.status(200).json({
+    status: "ok",
+    timestamp: Date.now(),
+    uptime: process.uptime(),
+  });
+});
+
+if (config.nodeEnv === "production") {
+  const clientPath = path.resolve(process.cwd(), "../client/dist");
+  app.use(express.static(clientPath));
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/")) return next();
+    res.sendFile(path.join(clientPath, "index.html"));
+  });
+}
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) return next(err);
+  req.log.error(config.nodeEnv === "development" ? { err } : {});
+  res.status(500).json({ message: "Internal server error" });
+});
+
+const logger = pino();
+
+const server = app.listen(config.port, () => {
+  logger.info(`Server running on port ${config.port}`);
+});
+
+function shutdown() {
+  server.close(async () => {
+    await prisma.$disconnect();
+    logger.info("Server closed");
+  });
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

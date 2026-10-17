@@ -1,15 +1,32 @@
+import { API_BASE_URL } from "../api";
 import { createContext, useContext, useEffect, useState } from "react";
+import type { PropsWithChildren } from "react";
 import { useNavigate } from "react-router-dom";
+import type { User } from "../types";
 
-export const AuthContext = createContext(null);
+type AuthContextValue = {
+  user: User | null;
+  loading: boolean;
+  register: (email: string, username: string, password: string) => Promise<{ success: boolean; message: string }>;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+};
 
-export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used inside AuthProvider");
+  return context;
+}
+
+export default function AuthProvider({ children }: PropsWithChildren) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigator = useNavigate();
 
   useEffect(() => {
-      fetch("http://localhost:5500/api/auth/me", {
+      fetch(`${API_BASE_URL}/api/auth/me`, {
         credentials: "include",
       })
         .then((response) => {
@@ -22,14 +39,14 @@ export default function AuthProvider({ children }) {
           setUser(data);
           setLoading(false);
         })
-        .catch((err) => {
+        .catch(() => {
           setUser(null);
           setLoading(false);
         });
   }, []);
 
   async function register(email: string, username: string, password: string) {
-    const response = await fetch("http://localhost:5500/api/auth/register", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +76,7 @@ export default function AuthProvider({ children }) {
   }
 
   async function login(email: string, password: string) {
-    const response = await fetch("http://localhost:5500/api/auth/login", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
