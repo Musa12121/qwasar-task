@@ -15,18 +15,6 @@ export default function AdminPage() {
   const { logout } = useAuth();
   const navigator = useNavigate();
 
-  async function getPosts() {
-    const postsResponse = await fetch(`${API_BASE_URL}/api/admin/posts`, {
-      credentials: "include",
-    });
-
-    const postsData = await postsResponse.json();
-
-    if (postsResponse.ok) {
-      setPosts(postsData);
-    }
-  }
-
   async function togglePublished(id: number) {
     setError("");
     const response = await fetch(
@@ -50,10 +38,25 @@ export default function AdminPage() {
     }
     setLoading(false);
 
-    getPosts();
+    const updatedPost = await response.json();
+    setPosts((currentPosts) =>
+      currentPosts.map((post) => (post.id === id ? updatedPost : post)),
+    );
   }
 
   useEffect(() => {
+    async function getPosts() {
+      const response = await fetch(`${API_BASE_URL}/api/admin/posts`, {
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPosts(data);
+      }
+    }
+
     async function getUsers() {
       const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
         credentials: "include",
