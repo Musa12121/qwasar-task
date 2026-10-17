@@ -29,7 +29,7 @@ jobs:
 
       - run: npm run build --prefix client
 
-      - run: docker build -f dockerfile -t my-fullstack-blog .
+      - run: docker build -f Dockerfile -t my-fullstack-blog .
 
       - name: Check container health
         run: |
