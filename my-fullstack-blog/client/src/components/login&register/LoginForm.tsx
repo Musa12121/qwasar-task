@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import "../../styles/Login.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 
 export default function Login() {
   const [email, setEmail] = useState("");

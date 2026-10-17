@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/CreatePost.css";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");

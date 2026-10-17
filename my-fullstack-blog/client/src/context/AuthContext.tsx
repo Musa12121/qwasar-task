@@ -1,24 +1,9 @@
 import { API_BASE_URL } from "../api";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types";
-
-type AuthContextValue = {
-  user: User | null;
-  loading: boolean;
-  register: (email: string, username: string, password: string) => Promise<{ success: boolean; message: string }>;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-};
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used inside AuthProvider");
-  return context;
-}
+import { AuthContext } from "./auth-context";
 
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null);

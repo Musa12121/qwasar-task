@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/EditPostPage.css";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 
 export default function EditPostPage() {
   const { id } = useParams();
@@ -17,7 +17,6 @@ export default function EditPostPage() {
   const { logout } = useAuth();
 
   useEffect(() => {
-    setError("");
     async function getPost() {
       const response = await fetch(`${API_BASE_URL}/api/posts/${id}`,{ credentials: "include" });
 
@@ -28,6 +27,7 @@ export default function EditPostPage() {
         return;
       }
 
+      setError("");
       setTitle(data.title);
       setContent(data.content);
     }

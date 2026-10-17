@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import "../../styles/HomePage.css";
 import DeleteConfirmation from "./DeleteConfirmation";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import type { Post } from "../../types";
 import Navbar from "../Navbar";
 import Spinner from "../Spinner";
@@ -16,7 +16,6 @@ export default function HomePage() {
   const { user } = useAuth();
   const navigator = useNavigate();
   useEffect(() => {
-    setError("");
     fetch(`${API_BASE_URL}/api/posts`, { credentials: "include" })
       .then((response) => {
         if (response.ok) {

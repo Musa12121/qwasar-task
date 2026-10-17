@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "../../api";
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import type { Post } from "../../types";
 
 export default function DeleteConfirmation({

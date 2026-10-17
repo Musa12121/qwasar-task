@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "../../api";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/auth-context";
 import type { Post, User } from "../../types";
 import DeleteConfirmation from "../post/DeleteConfirmation";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +54,6 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    setLoading(true);
     async function getUsers() {
       const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
         credentials: "include",

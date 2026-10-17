@@ -13,7 +13,6 @@ export default function SinglePostPage() {
   const parsedId = parseInt(id ?? "0");
 
   useEffect(() => {
-    setError('')
     const main = async () => {
       try {
         const response = await fetch(
@@ -26,6 +25,7 @@ export default function SinglePostPage() {
           setError(data.message);
           return;
         }
+        setError("");
         setLoading(false);
         setData(data);
       } catch {

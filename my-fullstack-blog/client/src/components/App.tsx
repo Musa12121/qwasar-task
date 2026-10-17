@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import LoginForm from "./login&register/LoginForm";
 import RegisterForm from "./login&register/RegisterForm ";
@@ -11,6 +12,10 @@ import AdminPage from "./admin/AdminPage";
 import DefaultPage from "./login&register/DefaultPage";
 
 export default function App() {
+  useEffect(() => {
+    document.getElementById("initial-loader")?.remove();
+  }, []);
+
   return (
     <>
       <Routes>

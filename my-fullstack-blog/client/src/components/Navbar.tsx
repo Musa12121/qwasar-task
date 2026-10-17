@@ -1,4 +1,4 @@
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/auth-context";
 import type { User } from "../types";
 import { NavLink } from "react-router-dom";
 
