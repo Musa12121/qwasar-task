@@ -1,303 +1,74 @@
-# Welcome to My Fullstack Blog
+# My Deployed App — Fullstack Blog
 
----
+## Live app
 
-## Task
+**Render URL:** https://my-fullstack-blog-1xv9.onrender.com
 
-The goal of this project was to build a complete fullstack blog application with a React frontend and an Express backend.
+**Health check:** `https://my-fullstack-blog-1xv9.onrender.com/api/health`
 
-The main challenge was to connect the frontend and backend into one application while implementing authentication, authorization, CRUD operations, image uploads, protected routes, and admin functionality.
+The health endpoint returns the app status, current timestamp, and server uptime.
 
-The project uses React and React Router on the frontend, and Express, Prisma, SQLite, JWT, and bcrypt on the backend.
+## About the app
 
-## Description
+This is a fullstack blog with a React and TypeScript frontend and an Express and TypeScript backend. It supports registration and login, blog posts, image uploads, and admin features.
 
-This project is a fullstack blog application where users can:
+The production app is served from one Docker container. Express serves the built frontend and the API. PostgreSQL is hosted on Neon, and Prisma manages the database.
 
-- Register and log in
-- Log out
-- View published blog posts
-- View individual posts
-- Create posts
-- Edit their own posts
-- Delete their own posts
-- Upload post images
-- Preview images before uploading
+## Run locally with Docker
 
-The application also includes an admin role.
+Prerequisites: Docker Desktop and a Neon PostgreSQL database.
 
-Administrators can:
+From the repository root, enter the application directory and create a local environment file:
 
-- View all users
-- View all posts, including unpublished posts
-- Publish and unpublish posts
-- Edit any post
-- Delete any post
+```powershell
+cd my-deployed-app
+Copy-Item .env.example server/.env
+```
 
-Authentication is handled using JWT tokens. Passwords are hashed with bcrypt before being stored in the database.
+Edit `server/.env` and provide valid database connection strings and a private JWT secret. For Docker, set `NODE_ENV=production` and `PORT=3001`.
 
-Both the frontend and backend protect authenticated functionality. React uses protected routes, while Express uses authentication and admin middleware.
+Build and run the container:
 
-The database is SQLite and is managed with Prisma ORM.
+```powershell
+docker build -f Dockerfile -t my-deployed-app .
+docker run --rm --env-file server/.env -p 3001:3001 my-deployed-app
+```
 
-## Technologies
+Open the app at [http://localhost:3001](http://localhost:3001). Check the health endpoint at [http://localhost:3001/api/health](http://localhost:3001/api/health).
 
-- React
-- React Router
-- TypeScript
-- Vite
-- Express
-- Prisma
-- SQLite
-- JWT
-- bcrypt
-- Multer
-- CSS
+Never commit `server/.env` or put real secrets in this README. Commit only `.env.example`.
 
+## Environment variables
 
-## Database Schema
+Set these in `server/.env` for local use and in Render’s Environment settings for deployment.
 
-User
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | Server port. Use `3001` locally. Render provides its own port, so do not set this in Render. |
+| `DATABASE_URL` | Neon pooled PostgreSQL connection string used by the app. |
+| `DATABASE_URL_UNPOOLED` | Neon direct connection string used by Prisma for database operations such as migrations. |
+| `JWT_SECRET` | Private random secret used to sign authentication tokens. |
+| `NODE_ENV` | Use `development` locally and `production` on Render. |
+| `CLIENT_URL` | Frontend origin allowed by the API’s CORS configuration. Use the local frontend URL for development and the Render app URL in production. |
 
-The User model contains:
+Use the Neon **production** branch URLs in Render. Keep all passwords and secrets private.
 
-id
-email
-username
-passwordHash
-createdAt
-role
+## CI/CD and deployment
 
-A user can have many posts.
+The GitHub Actions workflow is `.github/workflows/ci-cd.yml`. It runs on pushes and pull requests targeting `main`. It installs client dependencies, runs ESLint, builds the frontend, builds the Docker image, and starts the container to check `/api/health`.
 
-Post
+There is no separate unit-test suite configured in this project yet; the container health check is the automated runtime check.
 
-The Post model contains:
+Render is connected to the GitHub repository and deploys commits from `main`. The production database schema is managed with Prisma migrations.
 
-id
-title
-content
-imageUrl
-published
-authorId
-createdAt
-updatedAt
+## Production readiness
 
-Each post belongs to one user.
+- `GET /api/health` reports status, timestamp, and uptime.
+- Pino provides structured HTTP request and error logging.
+- Express serves the Vite production build from the same service as the API.
+- The server handles `SIGTERM` and `SIGINT`, stops accepting requests, and disconnects Prisma.
+- Production secrets are configured in Render and excluded from Git.
 
-## Installation
+## What I learned
 
-Clone the project and enter the project directory.
-
-Install the root dependencies:
-
-bash
-npm install
-
-Install the client dependencies:
-
-cd client
-npm install
-
-Install the server dependencies:
-
-cd ../server
-npm install
-
-Create a `.env` file in the server directory and add your database URL and JWT secret.
-
-Example:
-
-env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="your-secret-key"
-
-Use whatever database filename you actually have instead of `dev.db`.
-
-Also, the real `.env` file should **not be committed to Git**.
-
-Run the Prisma migration:
-
-npx prisma migrate dev
-
-Run the seed script:
-
-npx prisma db seed
-
-Return to the project root:
-
-cd ..
-
-Start both the frontend and backend:
-
-npm run dev
-
-The root dev script starts both applications at the same time.
-
-
-## One important detail
-
-Your root `package.json` has:
-
-"dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\""
-
-So you don't need to start the client and server separately. Running:
-
-npm run dev
-
-from the root starts both.
-
-## Usage
-
-Open the frontend in your browser.
-
-The application starts with a page containing Login and Register options.
-
-After logging in, authenticated users can:
-
-View posts
-Create new posts
-Edit their own posts
-Delete their own posts
-
-Administrators have access to the Admin Panel where they can manage users and posts.
-
-Images can be uploaded when creating or editing posts. Supported image types are JPEG, PNG, and WebP, with a maximum file size of 5 MB.
-
-Uploaded images are stored in the server uploads directory and served through the /uploads route.
-
-Authentication
-
-Authentication works using JWT tokens.
-
-Register
-POST /api/auth/register
-
-Creates a new user and returns a JWT token.
-
-Login
-POST /api/auth/login
-
-Verifies the user's email and password and returns a JWT token.
-
-Current User
-GET /api/auth/me
-
-Returns the currently authenticated user.
-
-This endpoint requires:
-
-Authorization: Bearer <token>
-Post API
-Get published posts
-GET /api/posts
-
-Returns all published posts.
-
-Get a single post
-GET /api/posts/:id
-
-Returns one post and its author information.
-
-Create a post
-POST /api/posts
-
-Requires authentication.
-
-Supports:
-
-Title
-Content
-Image upload
-Update a post
-PUT /api/posts/:id
-
-Requires authentication.
-
-Users can edit their own posts, while administrators can edit any post.
-
-Delete a post
-DELETE /api/posts/:id
-
-Requires authentication.
-
-Users can delete their own posts, while administrators can delete any post.
-
-Admin API
-Get all users
-GET /api/admin/users
-
-Admin access required.
-
-Get all posts
-GET /api/admin/posts
-
-Admin access required.
-
-This endpoint also returns unpublished posts.
-
-Toggle published status
-PATCH /api/admin/posts/:id/published
-
-Admin access required.
-
-This toggles a post between published and unpublished.
-
-Seed Accounts
-
-The seed script creates one administrator and two regular users.
-
-Admin
-Email: admin@example.com
-Password: admin123
-Role: admin
-
-User 1
-Email: user1@example.com
-Password: user123
-Role: user
-
-User 2
-Email: user2@example.com
-Password: user456
-Role: user
-
-These accounts are intended for local development and testing.
-
-Error and Loading States
-
-The application includes:
-
-Loading states while data is being fetched
-Error messages for failed requests
-Empty states when there are no posts or users
-Authentication error handling
-Protected route redirection
-Token expiration handling
-What I Learned
-
-During this project, I learned how a frontend and backend communicate through a REST API and how authentication works across that boundary.
-
-I learned how to:
-
-Hash passwords securely with bcrypt
-Create and verify JWT tokens
-Store authentication tokens on the frontend
-Protect React routes
-Protect Express API endpoints with middleware
-Differentiate authentication from authorization
-Use Prisma with SQLite
-Build CRUD APIs
-Handle file uploads with Multer
-Use FormData for multipart requests
-Implement role-based authorization
-Manage loading, error, and empty states in React
-Connect frontend state with backend data
-
- The most important concept I learned was that frontend protection alone is not enough. The backend must also verify authentication and authorization for every protected operation.
-
-### The Core Team
-
-
-<span><i>Made at <a href='https://qwasar.io'>Qwasar SV -- Software Engineering School</a></i></span>
-<span><img alt='Qwasar SV -- Software Engineering School's Logo' src='https://storage.googleapis.com/qwasar-public/qwasar-logo_50x50.png' width='20px' /></span>
+Shipping the blog taught me how Docker packages the frontend and backend for deployment, how GitHub Actions checks changes automatically, and how Render runs the container on the internet. I connected Prisma to a hosted PostgreSQL database, kept environment secrets out of source control, and added a health endpoint and structured logs so the deployed service is easier to check and debug.
