@@ -46,7 +46,7 @@ const config: runtime.GetPrismaClientConfig = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
   "inlineDatasources": {
     "db": {
       "url": {
@@ -55,8 +55,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "model User {\n  id           Int      @id @default(autoincrement())\n  email        String   @unique\n  username     String\n  passwordHash String\n  createdAt    DateTime\n  role         String   @default(\"user\")\n  posts        Post[]\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  title     String\n  content   String\n  imageUrl  String?\n  published Boolean\n  authorId  Int\n  createdAt DateTime\n  updatedAt DateTime\n  user      User     @relation(fields: [authorId], references: [id])\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n",
-  "inlineSchemaHash": "3d6affd622e3a058df0a7c2c45299b0722857521a10fa6cb80b93dbce74319ef",
+  "inlineSchema": "model User {\n  id           Int      @id @default(autoincrement())\n  email        String   @unique\n  username     String\n  passwordHash String\n  createdAt    DateTime\n  role         String   @default(\"user\")\n  posts        Post[]\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  title     String\n  content   String\n  imageUrl  String?\n  published Boolean\n  authorId  Int\n  createdAt DateTime\n  updatedAt DateTime\n  user      User     @relation(fields: [authorId], references: [id])\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n",
+  "inlineSchemaHash": "82362789e764933258d42b3665029cf7475b7fd10b90886aacce8dcf224338e4",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
