@@ -1,9 +1,11 @@
 FROM node:20-alpine AS build
 RUN apk add --no-cache openssl
 
-WORKDIR /app
-COPY client ./client
-RUN cd client && npm ci && npm run build
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm ci
+COPY client ./
+RUN npm run build
 
 WORKDIR /app/server
 COPY server/package*.json ./
@@ -14,8 +16,7 @@ COPY server/prisma/schema.prisma ./prisma/schema.prisma
 
 RUN npx prisma generate \
     && npm run build \
-    && cp generated/prisma/*.node dist/generated/prisma/ \
-    && npm prune --omit=dev
+    && cp generated/prisma/*.node dist/generated/prisma/
 
 FROM node:20-alpine
 RUN apk add --no-cache openssl
@@ -25,9 +26,13 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 COPY --from=build /app/server/package*.json ./
-COPY --from=build /app/server/node_modules ./node_modules
+RUN npm ci --omit=dev --omit=optional --ignore-scripts \
+    && find node_modules/@prisma/client/runtime -type f \
+       \( -name '*wasm*' -o -name '*.map' \) -delete \
+    && npm cache clean --force
 COPY --from=build /app/server/dist ./dist
 COPY --from=build /app/client/dist /app/client/dist
+COPY --from=build /app/server/prisma/schema.prisma ./prisma/schema.prisma
 
 RUN mkdir -p uploads
 

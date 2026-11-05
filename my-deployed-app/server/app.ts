@@ -9,32 +9,44 @@ import multer from "multer";
 import path from "path";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
-import pino from "pino";
 import { version } from "./package.json";
 import { randomUUID } from "node:crypto";
+import { getHeapStatistics } from "node:v8";
 
 const app = express();
 
-app.use(
-  pinoHttp({
-    redact: [
-      "req.headers.authorization",
-      "req.headers.cookie",
-      'res.headers["set-cookie"]',
-      "req.body.password",
-      "req.body.token",
-    ],
-    genReqId: (request, response) => {
-      const id = randomUUID();
-      response.setHeader("X-Request-Id", id);
-      return id;
+const httpLogger = pinoHttp({
+  redact: [
+    "req.headers.authorization",
+    "req.headers.cookie",
+    'res.headers["set-cookie"]',
+    "req.body.password",
+    "req.body.token",
+  ],
+  serializers: {
+    err(error: { type: string; message: string; stack?: string }) {
+      if (config.nodeEnv === "production") {
+        return { type: error.type, message: error.message };
+      }
+
+      return error;
     },
-    transport:
-      config.nodeEnv === "development"
-        ? { target: "pino-pretty" }
-        : undefined,
-  }),
-);
+  },
+  genReqId: (request, response) => {
+    const id = randomUUID();
+    response.setHeader("X-Request-Id", id);
+    return id;
+  },
+  transport:
+    config.nodeEnv === "development"
+      ? { target: "pino-pretty" }
+      : undefined,
+});
+
+const logger = httpLogger.logger;
+
+app.use(httpLogger);
+
 app.use("/uploads", express.static("uploads"));
 app.use(express.json());
 app.use(
@@ -482,15 +494,28 @@ app.get("/api/health", async (request, response) => {
     request.log.error({ err: error }, "Database health check failed");
   }
 
-  const healthy = database === "up";
+  const memory = process.memoryUsage();
+  const heapLimit = getHeapStatistics().heap_size_limit;
+  const heapUsagePercent = (memory.heapUsed / heapLimit) * 100;
+  const memoryStatus = heapUsagePercent > 80 ? "warning" : "ok";
+
+  if (memoryStatus === "warning") {
+    request.log.warn({ heapUsagePercent }, "Heap memory usage exceeds 80%");
+  }
+
+  const healthy = database === "up" && memoryStatus === "ok";
 
   response.status(healthy ? 200 : 503).json({
     status: healthy ? "ok" : "degraded",
     database,
+    checks: {
+      database: database === "up" ? "ok" : "down",
+      memory: memoryStatus,
+    },
     version,
     timestamp: Date.now(),
     uptime: process.uptime(),
-    memory: process.memoryUsage(),
+    memory: { ...memory, heapLimit, heapUsagePercent },
   });
 });
 
@@ -505,14 +530,13 @@ if (config.nodeEnv === "production") {
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) return next(err);
-  req.log.error(config.nodeEnv === "development" ? { err } : {});
+  req.log.error({ err }, "Request failed");
   res.status(500).json({ message: "Internal server error" });
 });
 
 export { app, prisma };
 
 if (require.main === module) {
-  const logger = pino();
 
   const server = app.listen(config.port, (error?: Error) => {
     if (error) {
