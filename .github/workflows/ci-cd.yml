@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -6,48 +6,63 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-test:
+  lint-test:
+    name: Lint and Test
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: my-deployed-app
 
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      DATABASE_URL_UNPOOLED: postgresql://test:test@localhost:5432/test
+
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: my-deployed-app/client/package-lock.json
+          node-version: 20
 
       - run: npm ci --prefix client
+      - run: npm ci --prefix server
+
+      - name: Generate Prisma client
+        working-directory: my-deployed-app/server
+        run: npx prisma generate
 
       - run: npm run lint --prefix client
-
+      - run: npm run lint --prefix server
+      - run: npm test --prefix server
       - run: npm run build --prefix client
 
-      - run: docker build -f Dockerfile -t my-deployed-app .
+  build-docker:
+    name: Build Docker Image
+    needs: lint-test
+    runs-on: ubuntu-latest
 
-      - name: Check container health
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Docker image
+        working-directory: my-deployed-app
+        run: docker build -t my-deployed-app .
+
+  deploy:
+    name: Deploy
+    needs: build-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          docker run -d --name blog -p 5500:5500 \
-            -e PORT=5500 \
-            -e DATABASE_URL=postgresql://user:password@localhost:5432/blog?schema=public \
-            -e DATABASE_URL_UNPOOLED=postgresql://user:password@localhost:5432/blog?schema=public \
-            -e JWT_SECRET=test-secret \
-            -e NODE_ENV=production \
-            my-deployed-app
-
-          for i in {1..15}; do
-            if curl --fail --silent http://localhost:5500/api/health; then
-              docker rm -f blog
-              exit 0
-            fi
-            sleep 2
-          done
-
-          docker logs blog
-          exit 1
+          curl --fail --silent --show-error --request POST \
+            "${RENDER_DEPLOY_HOOK_URL}&ref=${GITHUB_SHA}"
