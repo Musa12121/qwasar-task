@@ -55,12 +55,25 @@ the workflow deploys using the `RENDER_DEPLOY_HOOK_URL` secret.
 
 ## Monitoring
 
-UptimeRobot checks `/api/health` every five minutes and sends downtime
-alerts by email.
+Render and UptimeRobot check `/api/health`. UptimeRobot checks every
+five minutes and sends downtime alerts by email.
 
-The endpoint checks database connectivity and reports uptime, memory
-usage, and app version. It returns `200` when healthy and `503` when the
-database check fails.
+The endpoint reports database connectivity, uptime, version, and memory
+usage. It returns `503` if the database is unavailable or JavaScript heap
+usage exceeds 80% of its limit. High memory usage also produces a warning log.
+
+Render forwards application logs to Better Stack. An email alert fires
+when five or more HTTP `500` responses occur within five minutes.
+It checks every minute and resolves after the count stays below five
+for one minute.
+
+## Database migrations
+
+From `my-deployed-app/server`, apply committed migrations with:
+
+```bash
+npx prisma migrate deploy
+```
 
 ## What I learned
 

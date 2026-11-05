@@ -40,3 +40,21 @@ test("health returns 503 when the database fails", async () => {
   assert.equal(response.body.status, "degraded");
   assert.equal(response.body.database, "down");
 });
+
+test("health warns when memory usage exceeds 80%", async (t) => {
+  prisma.$queryRaw = async () => [{ value: 1 }];
+
+  const memory = process.memoryUsage();
+  const heapLimit = require("node:v8").getHeapStatistics().heap_size_limit;
+
+  t.mock.method(process, "memoryUsage", () => ({
+    ...memory,
+    heapUsed: heapLimit * 0.9,
+  }));
+
+  const response = await request(app).get("/api/health").expect(503);
+
+  assert.equal(response.body.status, "degraded");
+  assert.equal(response.body.checks.database, "ok");
+  assert.equal(response.body.checks.memory, "warning");
+});
