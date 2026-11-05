@@ -15,6 +15,8 @@ cd my-deployed-app
 Copy-Item .env.example server/.env
 ```
 
+Use unquoted values in `server/.env` because Docker reads it with `--env-file`.
+
 Add valid database URLs and a JWT secret to `server/.env`, then run:
 
 ```powershell
@@ -26,19 +28,39 @@ Open http://localhost:3001.
 
 ## Environment variables
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | Server port; use `3001` locally. Render sets this automatically. |
-| `DATABASE_URL` | Pooled Neon PostgreSQL connection string. |
-| `DATABASE_URL_UNPOOLED` | Direct Neon connection string for Prisma migrations. |
-| `JWT_SECRET` | Secret used to sign authentication tokens. |
-| `NODE_ENV` | App mode: `development` or `production`. |
-| `CLIENT_URL` | Frontend URL allowed by the API CORS settings. |
-| `VITE_API_URL` | API URL used by the client. |
+Server variables go in `server/.env`. Put `VITE_API_URL` in
+`client/.env` and `RENDER_DEPLOY_HOOK_URL` in GitHub Actions secrets.
+
+| Variable | Required | Default | Purpose |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | Yes | None | Pooled PostgreSQL connection |
+| `DATABASE_URL_UNPOOLED` | For Prisma CLI | None | Direct database connection |
+| `JWT_SECRET` | Yes | None | Signs authentication tokens |
+| `PORT` | No | `3001` | Server port; Render supplies its own |
+| `NODE_ENV` | No | `development` | Docker sets this to `production` |
+| `CLIENT_URL` | No | `http://localhost:5173` | Allowed frontend origin |
+| `VITE_API_URL` | No | Same origin | Set to `http://localhost:3001` for frontend development |
+| `RENDER_DEPLOY_HOOK_URL` | For deployment | None | Triggers Render from GitHub Actions |
 
 ## CI/CD
 
-The GitHub Actions workflow runs on pushes and pull requests to `main`. It lints and builds the client, builds the Docker image, and checks the container health endpoint. Render deploys updates from the connected GitHub branch.
+GitHub Actions runs three jobs:
+
+1. Lint and Test: lints both apps, tests the health endpoint, and builds the frontend.
+2. Build Docker Image: builds the production image after checks pass.
+3. Deploy: triggers Render for the checked commit on pushes to `main`.
+
+Pull requests to `main` run the first two jobs. Render Auto-Deploy is off;
+the workflow deploys using the `RENDER_DEPLOY_HOOK_URL` secret.
+
+## Monitoring
+
+UptimeRobot checks `/api/health` every five minutes and sends downtime
+alerts by email.
+
+The endpoint checks database connectivity and reports uptime, memory
+usage, and app version. It returns `200` when healthy and `503` when the
+database check fails.
 
 ## What I learned
 
