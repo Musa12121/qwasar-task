@@ -1,9 +1,17 @@
+type Config = {
+  port: number;
+  databaseUrl: string;
+  jwtSecret: string;
+  nodeEnv: string;
+  clientUrl: string;
+};
+
 const { PORT, DATABASE_URL, JWT_SECRET, NODE_ENV, CLIENT_URL } = process.env;
 
 if (!DATABASE_URL) throw new Error("Missing required environment variable: DATABASE_URL");
 if (!JWT_SECRET) throw new Error("Missing required environment variable: JWT_SECRET");
 
-export const config = {
+export const config: Config = {
   port: Number(PORT || 3001),
   databaseUrl: DATABASE_URL,
   jwtSecret: JWT_SECRET,

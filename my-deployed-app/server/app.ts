@@ -10,10 +10,31 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import pino from "pino";
+import { version } from "./package.json";
+import { randomUUID } from "node:crypto";
 
 const app = express();
 
-app.use(pinoHttp({ transport: config.nodeEnv === "development" ? { target: "pino-pretty" } : undefined }));
+app.use(
+  pinoHttp({
+    redact: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      'res.headers["set-cookie"]',
+      "req.body.password",
+      "req.body.token",
+    ],
+    genReqId: (request, response) => {
+      const id = randomUUID();
+      response.setHeader("X-Request-Id", id);
+      return id;
+    },
+    transport:
+      config.nodeEnv === "development"
+        ? { target: "pino-pretty" }
+        : undefined,
+  }),
+);
 app.use("/uploads", express.static("uploads"));
 app.use(express.json());
 app.use(
@@ -36,7 +57,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileTypeFilter = (request, file, callback) => {
+const fileTypeFilter = (request: Request, file: Express.Multer.File, callback: multer.FileFilterCallback) => {
   if (
     file.mimetype === "image/jpeg" ||
     file.mimetype === "image/png" ||
@@ -70,6 +91,11 @@ const authMiddleware = (
   }
   try {
     const isTokenCorrect = jwt.verify(token, config.jwtSecret);
+
+    if (typeof isTokenCorrect === "string") {
+      throw new Error("Invalid token payload");
+    }
+
     response.locals.userId = isTokenCorrect.userId;
     response.locals.role = isTokenCorrect.role;
     next();
@@ -225,7 +251,10 @@ app.get("/api/posts", async (request, response) => {
 });
 
 app.get("/api/posts/:id", async (request, response) => {
-  const parsedId = parseInt(request.params.id);
+  const parsedId = Number(request.params.id);
+  if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+    return response.status(400).json({ message: "Invalid post ID" });
+  }
   const target = await prisma.post.findUnique({ where: { id: parsedId } });
   if (!target) {
     return response
@@ -296,7 +325,10 @@ app.put(
   authMiddleware,
   upload.single("image"),
   async (request, response) => {
-    const parsedId = parseInt(request.params.id);
+    const parsedId = Number(request.params.id);
+    if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+      return response.status(400).json({ message: "Invalid post ID" });
+    }
     const { title, content } = request.body;
     const target = await prisma.post.findUnique({ where: { id: parsedId } });
     if (!target) {
@@ -346,7 +378,10 @@ app.put(
 );
 
 app.delete("/api/posts/:id", authMiddleware, async (request, response) => {
-  const parsedId = parseInt(request.params.id);
+  const parsedId = Number(request.params.id);
+  if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+    return response.status(400).json({ message: "Invalid post ID" });
+  }
   const target = await prisma.post.findUnique({ where: { id: parsedId } });
 
   if (!target) {
@@ -395,7 +430,10 @@ app.patch(
   authMiddleware,
   adminMiddleware,
   async (request, response) => {
-    const parsedId = parseInt(request.params.id);
+    const parsedId = Number(request.params.id);
+    if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+      return response.status(400).json({ message: "Invalid post ID" });
+    }
 
     const target = await prisma.post.findUnique({
       where: { id: parsedId },
@@ -434,11 +472,25 @@ app.get(
   },
 );
 
-app.get("/api/health", (request, response) => {
-  response.status(200).json({
-    status: "ok",
+app.get("/api/health", async (request, response) => {
+  let database = "up";
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch (error) {
+    database = "down";
+    request.log.error({ err: error }, "Database health check failed");
+  }
+
+  const healthy = database === "up";
+
+  response.status(healthy ? 200 : 503).json({
+    status: healthy ? "ok" : "degraded",
+    database,
+    version,
     timestamp: Date.now(),
     uptime: process.uptime(),
+    memory: process.memoryUsage(),
   });
 });
 
@@ -457,18 +509,27 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: "Internal server error" });
 });
 
-const logger = pino();
+export { app, prisma };
 
-const server = app.listen(config.port, () => {
-  logger.info(`Server running on port ${config.port}`);
-});
+if (require.main === module) {
+  const logger = pino();
 
-function shutdown() {
-  server.close(async () => {
-    await prisma.$disconnect();
-    logger.info("Server closed");
+  const server = app.listen(config.port, (error?: Error) => {
+    if (error) {
+      logger.error({ err: error }, "Server failed to start");
+      process.exit(1);
+    }
+
+    logger.info(`Server running on port ${config.port}`);
   });
-}
 
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
+  function shutdown() {
+    server.close(async () => {
+      await prisma.$disconnect();
+      logger.info("Server closed");
+    });
+  }
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+}

@@ -23,6 +23,8 @@ model Post {
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
 }
 
 datasource db {
